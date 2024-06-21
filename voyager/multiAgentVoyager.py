@@ -411,7 +411,7 @@ class MultiAgentVoyager:
         def get_ai_message_parse(agent, result):
             if agent.action_agent_rollout_num_iter < 0:
                 raise ValueError("Agent must be reset before stepping")
-            ai_message = agent.action_agent.llm(agent.messages)
+            ai_message = agent.action_agent.llm.invoke(agent.messages)
             agent.logger(f"\033[34m****Action Agent ai message****\n{ai_message.content}\033[0m")
             agent.conversations.append(
                 (agent.messages[0].content, agent.messages[1].content, ai_message.content)
