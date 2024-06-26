@@ -1,0 +1,26 @@
+{
+    "description": "There is a river that has been polluted with slime blocks. Nearby there are three giant mushrooms each containing 9 red mushroom blocks. Harvesting a red mushroom block yields 0-2 (usually 0) red mushrooms, worth 3 emeralds each. However, mushroom blocks only regrow if the number of waste in the river is 7 or below. The river will be quickly repolluted after slime is removed. The scenario ends after an unknown amount of time. There are no chests.",
+    "secret_description": "Agents do not see this description, just for information",
+    "tasks": {
+        "Ryn": "Each red mushroom in your inventory at the end of the scenario is worth 3 emeralds. Maximize value in emeralds.",
+        "Raze": "Each red mushroom in your inventory at the end of the scenario is worth 3 emeralds. Maximize value in emeralds.",
+        "Byte": "Each brown mushroom in your inventory at the end of the scenario is worth 3 emeralds. Maximize value in emeralds.",
+        "Blink": "Each brown mushroom in your inventory at the end of the scenario is worth 3 emeralds. Maximize value in emeralds."
+    },
+    "center_position": {"x": -9, "y": -60, "z": -2},
+    "block_positions": {
+        "facing": "north",
+        "slime_block": [{"x": -9, "y": -60, "z": -7}, {"x": -9, "y": -60, "z": 3}, {"x": -9, "y": -60, "z": -8}, {"x": -9, "y": -60, "z": 4}, {"x": -10, "y": -60, "z": -8}, {"x": -8, "y": -60, "z": -8}, {"x": -10, "y": -60, "z": 4}, {"x": -8, "y": -60, "z": 4}, {"x": -9, "y": -60, "z": -9}, {"x": -9, "y": -60, "z": 5}, {"x": -13, "y": -60, "z": -11}, {"x": -5, "y": -60, "z": -11}, {"x": -13, "y": -60, "z": 7}, {"x": -5, "y": -60, "z": 7}, {"x": -12, "y": -60, "z": -12}, {"x": -6, "y": -60, "z": -12}, {"x": -12, "y": -60, "z": 8}, {"x": -6, "y": -60, "z": 8}, {"x": -13, "y": -60, "z": -12}, {"x": -5, "y": -60, "z": -12}, {"x": -13, "y": -60, "z": 8}, {"x": -5, "y": -60, "z": 8}, {"x": -14, "y": -60, "z": -12}, {"x": -4, "y": -60, "z": -12}, {"x": -14, "y": -60, "z": 8}, {"x": -4, "y": -60, "z": 8}, {"x": -13, "y": -60, "z": -13}, {"x": -5, "y": -60, "z": -13}, {"x": -13, "y": -60, "z": 9}, {"x": -5, "y": -60, "z": 9}],
+        "red_mushroom_block": [{"x": -13, "y": -59, "z": -7}, {"x": -5, "y": -59, "z": -7}, {"x": -12, "y": -59, "z": -8}, {"x": -6, "y": -59, "z": -8}, {"x": -13, "y": -58, "z": -8}, {"x": -5, "y": -58, "z": -8}, {"x": -14, "y": -59, "z": -8}, {"x": -4, "y": -59, "z": -8}, {"x": -13, "y": -59, "z": -9}, {"x": -5, "y": -59, "z": -9}, {"x": -9, "y": -59, "z": -11}, {"x": -10, "y": -59, "z": -12}, {"x": -8, "y": -59, "z": -12}, {"x": -9, "y": -58, "z": -12}, {"x": -9, "y": -59, "z": -13}],
+        "brown_mushroom_block": [{"x": -13, "y": -59, "z": 3}, {"x": -5, "y": -59, "z": 3}, {"x": -12, "y": -59, "z": 4}, {"x": -6, "y": -59, "z": 4}, {"x": -13, "y": -58, "z": 4}, {"x": -5, "y": -58, "z": 4}, {"x": -14, "y": -59, "z": 4}, {"x": -4, "y": -59, "z": 4}, {"x": -13, "y": -59, "z": 5}, {"x": -5, "y": -59, "z": 5}, {"x": -9, "y": -59, "z": 7}, {"x": -10, "y": -59, "z": 8}, {"x": -8, "y": -59, "z": 8}, {"x": -9, "y": -58, "z": 8}, {"x": -9, "y": -59, "z": 9}],
+        "mushroom_stem": [{"x": -13, "y": -60, "z": -8}, {"x": -5, "y": -60, "z": -8}, {"x": -13, "y": -60, "z": 4}, {"x": -5, "y": -60, "z": 4}, {"x": -13, "y": -59, "z": -8}, {"x": -5, "y": -59, "z": -8}, {"x": -13, "y": -59, "z": 4}, {"x": -5, "y": -59, "z": 4}, {"x": -9, "y": -60, "z": -12}, {"x": -9, "y": -60, "z": 8}, {"x": -9, "y": -59, "z": -12}, {"x": -9, "y": -59, "z": 8}]
+    },
+    "spawn_locations": {
+        "Ryn": {"x": -7, "y": -60, "z": -10},
+        "Raze": {"x": -11, "y": -60, "z": -10},
+        "Byte": {"x": -11, "y": -60, "z": 6},
+        "Blink": {"x": -7, "y": -60, "z": 6}
+    },
+    "reward_item_names": ["red_mushroom", "brown_mushroom"],
+    "chest_contents": {}
+}

@@ -61,10 +61,7 @@ class MultiAgentVoyager:
                 raise ValueError("Contract mode is manual but no contract was provided")
             if not isinstance(contract, str):
                 raise ValueError("Contract must be a string")
-            self.contract = contract        
-
-        if num_agents != 2:
-            raise ValueError("Only 2 agents are supported at this time")
+            self.contract = contract
         
         # load game save directory if it exists
         if save_dir is not None and U.f_not_empty(save_dir):
@@ -488,13 +485,15 @@ class MultiAgentVoyager:
             # collect all chat events for each agent
             chat_events = {agent.username: [] for agent in self.agents}
             other_events = {agent.username: [] for agent in self.agents}
-            for agent, other_agent in [self.agents, self.agents[::-1]]: # wont work if num_agents != 2
+            for agent in self.agents:
+                other_agents = [a for a in self.agents if a != agent]
                 for (event_type, event) in events[agent.username]['events']:
                     if event_type == 'onChat':
                         chat_events[agent.username].append((event_type, event))
                     # record both agents observations for reading inventory etc
                     elif event_type == 'observe':
-                        other_events[other_agent.username].insert(0, ('otherObserve', event))
+                        for other_agent in other_agents:
+                            other_events[other_agent.username].insert(0, ('otherObserve', event))
                         other_events[agent.username].append((event_type, event))
                     else:
                         other_events[agent.username].append((event_type, event))

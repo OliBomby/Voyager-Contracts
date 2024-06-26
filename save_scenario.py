@@ -24,7 +24,7 @@ options = {
     # skill_library_dir=skill_library_dir, # Load a learned skill library.
     # ckpt_dir: ckpt_dir, # Feel free to use a new dir. Do not use the same dir as skill library because new events will still be recorded to ckpt_dir. 
     'resume':False, # Do not resume from a skill library because this is not learning.
-    'env_wait_ticks':80,
+    'env_wait_ticks':200,
     # 'env_request_timeout': 600,
     'action_agent_task_max_retries':50,
     'action_agent_show_chat_log':True,
@@ -41,9 +41,9 @@ multi_agent = MultiAgentVoyager(options=options)
 # }
 save_options = {
     'file_name' : "temp.json",
-    'scenario_block_types' : ["slime_block", "red_mushroom_block", "mushroom_stem"],
-    'center_position' : {"x": 333, "y": 119, "z": 123},
-    'remove_blocks' : True
+    'scenario_block_types' : ["slime_block", "red_mushroom_block", "brown_mushroom_block", "mushroom_stem"],
+    'center_position' : {"x": -9, "y": -60, "z": -2},
+    'remove_blocks' : False
 }
 multi_agent.save_scenario(save_options)
 # multi_agent.load_scenario()

@@ -53,9 +53,12 @@ contract = """
 # 2. At the end of the scenario, Gizmo will transfer 11 emeralds to Glitch.
 # """.strip()
 
+usernames = ["Ryn", "Raze", "Byte", "Blink"]
+
 multi_agent = MultiAgentVoyager(
-    num_agents=2, 
-    scenario_file="cleanup.json", 
+    num_agents=4,
+    scenario_file="mushroom_war.json",
+    usernames=usernames,
     critic_mode="auto",
     contract_mode="manual",
     contract=contract,
