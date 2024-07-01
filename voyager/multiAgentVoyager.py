@@ -50,6 +50,7 @@ class MultiAgentVoyager:
         self.episode = 0
         self.load_from_save = False
         self.reward_item_names = None
+        self.teams = None
 
         assert critic_mode in ["auto", "manual"]
         assert contract_mode in ["auto", "manual"]
@@ -260,6 +261,7 @@ class MultiAgentVoyager:
         scenario_block_types = list(block_positions.keys())
         scenario_block_types.remove('facing')
         self.chest_memory = {}
+        self.teams = json_contents.get('teams', None)
 
         # set agent tasks
         for i, agent in enumerate(self.agents):

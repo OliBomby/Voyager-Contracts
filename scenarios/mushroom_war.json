@@ -22,5 +22,25 @@
         "Blink": {"x": -7, "y": -60, "z": 6}
     },
     "reward_item_names": ["red_mushroom", "brown_mushroom"],
-    "chest_contents": {}
+    "chest_contents": {},
+    "teams": {
+        "red": {
+            "center_position": {
+                "x": -9,
+                "y": -60,
+                "z": -10
+            },
+            "reward_item_name": "red_mushroom",
+            "members": ["Ryn", "Raze"]
+        },
+        "blue": {
+            "center_position": {
+                "x": -9,
+                "y": -60,
+                "z": 6
+            },
+            "reward_item_name": "brown_mushroom",
+            "members": ["Byte", "Blink"]
+        }
+    }
 }

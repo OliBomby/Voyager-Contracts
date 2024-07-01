@@ -10,9 +10,20 @@ async function runCleanupScenario(bot) {
     const dirty_tick_speed = 0;
     const clean_tick_speed = 100;
 
-    const reward_block = mcData.blocksByName.red_mushroom_block;
     const stem_block = mcData.blocksByName.mushroom_stem;
     const waste_block = mcData.blocksByName.slime_block;
+
+    const team_centers = [
+        new Vec3(-9, -60, -10),
+        new Vec3(-9, -60, 6),
+    ];
+    const reward_blocks = [
+        mcData.blocksByName.red_mushroom_block,
+        mcData.blocksByName.brown_mushroom_block,
+    ];
+
+    const n_teams = team_centers.length;
+    const team_area_radius = 7;
 
     // Set the tick speed to high to grow berries
     // bot.chat(`/gamerule randomTickSpeed 40000`);
@@ -25,59 +36,68 @@ async function runCleanupScenario(bot) {
         maxDistance: 32,
         count: 100
     });
-    const rewardLocations = bot.findBlocks({
-        matching: reward_block.id,
-        maxDistance: 32,
-        count: 100
-    });
     const stemLocations = bot.findBlocks({
         matching: stem_block.id,
         maxDistance: 32,
         count: 100
     });
 
-    var clean = false;
+    // Get the reward block locations for each team separately
+    const rewardLocations = team_centers.map((center, index) => {
+        return bot.findBlocks({
+            point: center,
+            matching: reward_blocks[index].id,
+            maxDistance: team_area_radius,
+            count: 100
+        });
+    });
+
+    // Set clean is false for each team. Its a list of booleans
+    var clean = new Array(n_teams).fill(false)
 
     const intervalId = setInterval(async () => {
 
-        // Check if there are less than cutoff waste blocks
-        if (bot.findBlocks({
-            matching: waste_block.id,
-            maxDistance: 32,
-            count: 100
-        }).length <= waste_cutoff) {
+        for (let i = 0; i < n_teams; i++) {
+            // Check if there are less than cutoff waste blocks
+            if (bot.findBlocks({
+                point: team_centers[i],
+                matching: waste_block.id,
+                maxDistance: team_area_radius,
+                count: 100
+            }).length <= waste_cutoff) {
 
-            if (!clean) {
-                // Set the tick speed to high to grow berries
-                bot.chat("The river is clean!");
-                // bot.chat(`/gamerule randomTickSpeed ${clean_tick_speed}`);
-                clean = true;
-            }
-        
-            // Respawn the reward blocks using /setblock
-            rewardLocations.forEach(location => {
-                const { x, y, z } = location;
-
-                // Check if the block is missing at this location
-                const currentBlock = bot.blockAt(location);
-                if (currentBlock && currentBlock.name !== "red_mushroom_block") {
-                
-                    // Generate a random number between 0 and 1
-                    const rand = Math.random();
-
-                    // Respawn the block with probability
-                    if (rand < reward_respawn_rate) {
-                        bot.chat(`/setblock ${x} ${y} ${z} red_mushroom_block`);
-                    }
+                if (!clean[i]) {
+                    // Set the tick speed to high to grow berries
+                    bot.chat(`Team ${i} is clean!`);
+                    // bot.chat(`/gamerule randomTickSpeed ${clean_tick_speed}`);
+                    clean[i] = true;
                 }
-            });
-        }
-        else {
-            if (clean) {
-                // Set the tick speed to low to stop berries
-                bot.chat("The river is too dirty!");
-                // bot.chat(`/gamerule randomTickSpeed ${dirty_tick_speed}`);
-                clean = false;
+
+                // Respawn the reward blocks using /setblock
+                rewardLocations[i].forEach(location => {
+                    const { x, y, z } = location;
+
+                    // Check if the block is missing at this location
+                    const currentBlock = bot.blockAt(location);
+                    if (currentBlock && currentBlock.name !== reward_blocks[i].name) {
+
+                        // Generate a random number between 0 and 1
+                        const rand = Math.random();
+
+                        // Respawn the block with probability
+                        if (rand < reward_respawn_rate) {
+                            bot.chat(`/setblock ${x} ${y} ${z} ${reward_blocks[i].name}`);
+                        }
+                    }
+                });
+            }
+            else {
+                if (clean[i]) {
+                    // Set the tick speed to low to stop berries
+                    bot.chat(`Team ${i} is too dirty!`);
+                    // bot.chat(`/gamerule randomTickSpeed ${dirty_tick_speed}`);
+                    clean[i] = false;
+                }
             }
         }
 
