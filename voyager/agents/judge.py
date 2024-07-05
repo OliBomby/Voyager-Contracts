@@ -30,7 +30,7 @@ class JudgeAgent:
         system_message = SystemMessage(content=load_prompt("judge"))
         return system_message
 
-    def render_human_message(self, *, events, task, contract, scenario, context, chest_observation):
+    def render_human_message(self, *, events, task, tactics, scenario, context, chest_observation):
         """
         args:
             task: a dictionary of task for each agent in the form of {agent_name: task}
@@ -122,7 +122,7 @@ class JudgeAgent:
 
         observation += f"Scenario: {scenario}\n\n"
 
-        observation += f"Contract:\n{contract}\n\n"
+        observation += f"tactics:\n{tactics}\n\n"
 
         if context:
             observation += f"Context: {context}\n\n"

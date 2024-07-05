@@ -369,13 +369,13 @@ class CurriculumAgent:
         )
         U.dump_json(self.failed_tasks, f"{self.ckpt_dir}/curriculum/failed_tasks.json")
 
-    def decompose_task(self, task, events, contract=""):
+    def decompose_task(self, task, events, tactics=""):
         messages = [
             SystemMessage(
                 content=load_prompt("curriculum_task_decomposition"),
             ),
             self.render_human_message(events=events, chest_observation=""),
-            HumanMessage(content=f"Final task: {task}\n, Contract: {contract}"),
+            HumanMessage(content=f"Final task: {task}\n, tactics: {tactics}"),
         ]
         self.logger(
             f"\033[31m****Curriculum Agent task decomposition****\nFinal task: {task}\033[0m"

@@ -1,5 +1,7 @@
-import openai
 import logging
+
+from openai import OpenAI
+
 from api_keys import openai_api_key
 from voyager.prompts import load_prompt
 
@@ -13,7 +15,9 @@ class Negotiator:
         self.model = model
         self.temperature = temperature
 
-        openai.api_key = openai_api_key
+        self.client = OpenAI(
+            api_key=openai_api_key
+        )
 
         # Including both tasks in the system prompt
         system_prompt = load_prompt("negotiator")
@@ -29,18 +33,18 @@ class Negotiator:
         if content: 
             self.messages.append({"role": "user", "content": content})
         
-        response = openai.ChatCompletion.create(
+        response = self.client.chat.completions.create(
             model=self.model,
             messages=self.messages,
             temperature=self.temperature,
         )
         
         # Parsing the response based on the new structure
-        split_response = response['choices'][0]['message']['content'].split('[message]')
+        split_response = response.choices[0].message.content.split('[message]')
         inner_thought = split_response[0].replace('[thinking]', '').strip()
         message = split_response[1].strip() if len(split_response) > 1 else ""
         
-        self.messages.append({"role": "assistant", "content": response['choices'][0]['message']['content']})
+        self.messages.append({"role": "assistant", "content": response.choices[0].message.content})
         
         return inner_thought, message
 
@@ -52,10 +56,14 @@ class Negotiation:
         self.save_dir = save_dir
         self.reset()
         self.logger = self.setup_custom_logger()
+
+        self.client = OpenAI(
+            api_key=openai_api_key
+        )
                             
     def reset(self):
         self.conversation_log = []
-        self.contract = None
+        self.tactics = None
         self.agent1.reset()
         self.agent2.reset()
 
@@ -86,11 +94,11 @@ class Negotiation:
             summary_prompt += f"{name} (Message): {message}\n\n"
 
         # Generate a summary using the agent 
-        response = openai.ChatCompletion.create(
+        response = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "system", "content": summary_prompt}],
         )
-        summary = response['choices'][0]['message']['content'].strip()
+        summary = response.choices[0].message.content.strip()
         return summary
 
     def _display_message(self, log, print_flag=True):
@@ -134,26 +142,26 @@ class Negotiation:
             # Live display of conversation based on the flag
             self._display_message(self.conversation_log[-1])
             
-            # if a player accepts the contract, end the conversation
+            # if a player accepts the tactics, end the conversation
             if '[accept]' in message:
                 accept = True
                 break
 
-        # Extract the contract from the conversation log
+        # Extract the tactics from the conversation log
         if accept:
             try:
-                self.contract = self.conversation_log[-2][2].split('[contract]')[1].split('[contract end]')[0].strip()
+                self.tactics = self.conversation_log[-2][2].split('[tactics]')[1].split('[tactics end]')[0].strip()
             except IndexError:
-                raise Exception("Negotation failure. Contract accepted but no contract was found. Please try again.")
-            self.logger(f"Contract:\n{self.contract}\n")
+                raise Exception("Negotation failure. Tactics accepted but no tactics was found. Please try again.")
+            self.logger(f"Tactics:\n{self.tactics}\n")
         else:
-            raise Exception("Negotation failure. No contract was found. Please try again.")
+            raise Exception("Negotation failure. No tactics was found. Please try again.")
 
         # Summarize the conversation
         summary = self.summarize()
         self.logger(f"\033[90mNegotiation Summary:\n{summary}\n\033[0m", print_flag=False)
 
-    def get_contract(self):
-        if self.contract is None:
+    def get_tactics(self):
+        if self.tactics is None:
             raise Exception("Conversation has not been simulated. Use simulate() to simulate the conversation.")
-        return self.contract
+        return self.tactics

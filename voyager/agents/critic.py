@@ -30,7 +30,7 @@ class CriticAgent:
         system_message = SystemMessage(content=load_prompt("critic"))
         return system_message
 
-    def render_human_message(self, *, events, task, contract, scenario, context, chest_observation):
+    def render_human_message(self, *, events, task, tactics, scenario, context, chest_observation):
 
         chat_messages = []
         error_messages = []
@@ -114,7 +114,7 @@ class CriticAgent:
 
         observation += f"Scenario: {scenario}\n\n"
 
-        observation += f"Contract: {contract}\n\n"
+        observation += f"tactics: {tactics}\n\n"
 
         if context:
             observation += f"Context: {context}\n\n"

@@ -1,3 +1,4 @@
+import json
 import threading
 from voyager import Voyager
 from voyager.negotiation import Negotiation, Negotiator
@@ -9,35 +10,35 @@ import requests
 
 class MultiAgentVoyager:
     
-    def __init__(self, 
-        num_agents=2, 
-        server_port=3003,
-        usernames=["Gizmo", "Glitch"],  
-        judge_username="Judy",
-        scenario_file=None,
-        save_dir=None, 
-        critic_mode="auto", 
-        contract_mode="auto",
-        contract=None,
-        continuous=True,
-        episode_timeout=120, 
-        num_episodes=3,
-        negotiator_model_name="gpt-4",
-        negotiator_temperature=0.7,
-        skinurls = [
+    def __init__(self,
+                 num_agents=2,
+                 server_port=3003,
+                 usernames=["Ryn", "Raze", "Byte", "Blink"],
+                 judge_username="Judy",
+                 scenario_file=None,
+                 save_dir=None,
+                 critic_mode="auto",
+                 tactics_mode="auto",
+                 team_tactics=None,
+                 continuous=True,
+                 episode_timeout=120,
+                 num_episodes=3,
+                 negotiator_model_name="gpt-4",
+                 negotiator_temperature=0.7,
+                 skinurls = [
             "https://images2.imgbox.com/60/3d/2bJnlM8U_o.png", # player 1 skin
             "https://images2.imgbox.com/a7/6c/hZRGGRAS_o.png" # player 2 skin
         ],
-        options={}
-    ):
+                 options={}
+                 ):
 
         self.scenario_file = scenario_file
         self.scenario_description = None
         self.scenario_code = None
         self.critic_mode = critic_mode
         self.continuous = continuous
-        self.contract_mode = contract_mode
-        self.contract = contract
+        self.tactics_mode = tactics_mode
+        self.team_tactics = team_tactics if team_tactics is not None else {}
         self.agents = []
         self.judge = None
         self.usernames = usernames
@@ -49,34 +50,34 @@ class MultiAgentVoyager:
         self.chest_memory = {}
         self.episode = 0
         self.load_from_save = False
-        self.reward_item_names = None
         self.teams = None
+        self.team_members = None
 
         assert critic_mode in ["auto", "manual"]
-        assert contract_mode in ["auto", "manual"]
+        assert tactics_mode in ["auto", "manual"]
         if self.continuous:
             assert isinstance(self.num_episodes, int) and self.num_episodes > 0
 
-        if self.contract_mode == "manual":
-            if contract is None:
-                raise ValueError("Contract mode is manual but no contract was provided")
-            if not isinstance(contract, str):
-                raise ValueError("Contract must be a string")
-            self.contract = contract
+        if self.tactics_mode == "manual":
+            if team_tactics is None:
+                raise ValueError("Tactics mode is manual but no team tactics were provided")
+            if not isinstance(team_tactics, dict):
+                raise ValueError("Team tactics must be a dictionary of strings")
+            self.team_tactics = team_tactics
         
         # load game save directory if it exists
         if save_dir is not None and U.f_not_empty(save_dir):
             print("Provided save directory exists. Loading game...")
             self.save_dir = save_dir
 
-            # recover contract
+            # recover tactics
             try:
-                with open(f"{self.save_dir}/contract.txt", 'r') as contract_file:
-                        self.contract = contract_file.read()
-                if contract_mode == "auto":
-                    print("Warning: contract mode is auto but contract was found in save directory. Overwriting with saved contract...")
+                with open(f"{self.save_dir}/tactics.json", 'r') as tactics_file:
+                    self.team_tactics = json.load(tactics_file)
+                if tactics_mode == "auto":
+                    print("Warning: tactics mode is auto but tactics were found in save directory. Overwriting with saved tactics...")
             except FileNotFoundError:
-                raise("No contract found in save directory")
+                raise("No tactics found in save directory")
             
             self.load_from_save = True
         
@@ -257,15 +258,17 @@ class MultiAgentVoyager:
         block_positions = json_contents['block_positions']
         spawn_locations = json_contents['spawn_locations']
         chest_contents = U.parse_chest_contents(json_contents['chest_contents'])
-        self.reward_item_names = json_contents['reward_item_names']
         scenario_block_types = list(block_positions.keys())
         scenario_block_types.remove('facing')
         self.chest_memory = {}
         self.teams = json_contents.get('teams', None)
+        self.team_members = json_contents.get('team_members', None)
 
         # set agent tasks
         for i, agent in enumerate(self.agents):
             agent.task = tasks[agent.username]
+            agent.team = self.team_members[agent.username]
+            agent.reward_item_names = self.teams[agent.team]["reward_item_names"]
 
         # set judge task to all agents tasks
         self.judge.task = tasks
@@ -334,7 +337,7 @@ class MultiAgentVoyager:
                 events=events,
                 task=agent.task,
                 scenario=self.scenario_description,
-                contract=self.contract,
+                tactics=self.team_tactics[agent.team],
                 context=agent.context,
                 chest_observation=agent.action_agent.render_chest_observation(),
             )
@@ -364,7 +367,7 @@ class MultiAgentVoyager:
                     events=events[agent.username]['events'],
                     task=agent.task,
                     scenario=self.scenario_description,
-                    contract=self.contract,
+                    tactics=self.team_tactics[agent.team],
                     context=agent.context,
                     chest_observation=agent.action_agent.render_chest_observation(),
                 )
@@ -428,7 +431,7 @@ class MultiAgentVoyager:
 
             code = parsed_result["program_code"] + "\n" + parsed_result["exec_code"]
             events = agent.env.step(
-                f"await saveRewards(bot, {U.json_dumps(self.reward_item_names)}, '{self.save_dir}/episodes/episode{self.episode}');"
+                f"await saveRewards(bot, {U.json_dumps(agent.reward_item_names)}, '{self.save_dir}/episodes/episode{self.episode}');"
                 + code,
                 programs=agent.skill_manager.programs,
             )
@@ -437,7 +440,7 @@ class MultiAgentVoyager:
             result.update({'events': events})
 
         # update messages for next round
-        def update_agent(agent, result, parsed_result, events, success, critique, contract_critique, emeralds):
+        def update_agent(agent, result, parsed_result, events, success, critique, tactics_critique, emeralds):
             new_skills = agent.skill_manager.retrieve_skills(
                 query=agent.context
                 + "\n\n"
@@ -448,11 +451,11 @@ class MultiAgentVoyager:
                 events=events,
                 code=parsed_result["program_code"],
                 task=agent.task,
-                contract=agent.contract,
+                tactics=agent.team_tactics[agent.team],
                 scenario=agent.scenario,
                 context=agent.context,
                 critique=critique,
-                contract_critique=contract_critique,
+                tactics_critique=tactics_critique,
             )
             agent.last_events = copy.deepcopy(events)
             agent.messages = [system_message, human_message]
@@ -513,7 +516,7 @@ class MultiAgentVoyager:
             self.load_scenario(reset=reset)
             # time.sleep(3) # wait for voyagers and scenario to load
         
-        # if a specific episode is provided, look for contract and play it
+        # if a specific episode is provided, look for tactics and play it
         # ideally this should be moved to a different function (except env_step should be moved too)
         if episode is not None:
             if not isinstance(episode, int):
@@ -549,7 +552,7 @@ class MultiAgentVoyager:
                 **parsed_results[agent.username],
                 **events[agent.username], 
                 **critic_response[agent.username],
-                'contract_critique': critic_response[self.judge.username]['critique'][agent.username],
+                'tactics_critique': critic_response[self.judge.username]['critique'][agent.username],
                 'emeralds': critic_response[self.judge.username]['emeralds'][agent.username],
 
             } for agent in self.agents}
@@ -557,17 +560,18 @@ class MultiAgentVoyager:
 
         return results
 
-    def negotiate_contract(self, max_turns=8):
+    def negotiate_tactics(self, team, max_turns=8):
         """
-        Generates a contract for the agents to follow and sets self.contract to the contract.
+        Generates a tactics for the team to follow and sets self.tactics to the tactics.
         """
-        print('Negotiating contract...')
+        print('Negotiating tactics...')
         
         if self.scenario_description is None:
-            raise ValueError("Scenario must be loaded before negotiating contract")
-        
-        agent1 = self.agents[0]
-        agent2 = self.agents[1]
+            raise ValueError("Scenario must be loaded before negotiating tactics")
+
+        agents = [agent for agent in self.agents if agent.team == team]
+        agent1 = agents[0]
+        agent2 = agents[1]
 
         negotiator1 = Negotiator(
             name=agent1.username,
@@ -591,7 +595,7 @@ class MultiAgentVoyager:
         # hold a negotiation between players, where negotiator1 starts first
         negotiation = Negotiation(negotiator1, negotiator2, max_turns=max_turns, save_dir=self.save_dir)
         negotiation.simulate()
-        self.contract = negotiation.get_contract()
+        self.team_tactics[team] = negotiation.get_tactics()
 
     def run(self):
 
@@ -600,20 +604,21 @@ class MultiAgentVoyager:
 
         self.load_scenario(reset='hard')
         
-        # load the contract
-        if self.contract_mode == "auto":
-            if self.contract is not None:
-                print("Warning: contract provided but contract_mode is 'auto'. Contract will be ignored.")
-            print('Negotiating contract...')
-            self.negotiate_contract()
+        # load the tactics
+        if self.tactics_mode == "auto":
+            if self.team_tactics is not None:
+                print("Warning: tactics provided but tactics_mode is 'auto'. tactics will be ignored.")
+            print('Negotiating tactics...')
+            for team in self.teams.keys():
+                self.negotiate_tactics(team)
 
-        # save contract to file
-        with open(f"{self.save_dir}/contract.txt", 'w') as contract_file:
-            contract_file.write(self.contract)
+        # save tactics to file
+        with open(f"{self.save_dir}/tactics.json", 'w') as tactics_file:
+            json.dump(self.team_tactics, tactics_file, indent=4)
 
-        # set agent tasks and contract
+        # set agent tasks and tactics
         self.run_threads(lambda agent, _, args: agent.reset(task=agent.task, **args), args={'args': {
-            'contract': self.contract,
+            'tactics': self.team_tactics,
             'scenario': self.scenario_description,
             'context': "",
             'reset_env': False,}}, shared_args=True)
@@ -683,7 +688,7 @@ class MultiAgentVoyager:
 
 
 
-    # def run_episode(self, tasks, contract="", context=""):
+    # def run_episode(self, tasks, tactics="", context=""):
     #     results = []
     #     threads = []
 
@@ -691,7 +696,7 @@ class MultiAgentVoyager:
     #     for i, agent in enumerate(self.agents):
     #         task = tasks[i]
     #         result = {}
-    #         thread = threading.Thread(target=self.step, args=(agent, result, task, contract, context), daemon=True)
+    #         thread = threading.Thread(target=self.step, args=(agent, result, task, tactics, context), daemon=True)
     #         threads.append(thread)
     #         results.append(result)
     #         thread.start()
@@ -715,11 +720,11 @@ class MultiAgentVoyager:
             
     #     return results
 
-    # def step(self, agent, result, task, contract, context):
+    # def step(self, agent, result, task, tactics, context):
     #     # resetting because every step is a new episode
     #     agent.reset(
     #         task=task, 
-    #         contract=contract, 
+    #         tactics=tactics,
     #         context=context, 
     #         reset_env=False)
     #     messages, reward, done, info = messages, reward, done, info = agent.step()

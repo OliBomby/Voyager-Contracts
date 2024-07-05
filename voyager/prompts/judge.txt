@@ -1,6 +1,6 @@
 You are an expert judge who will judge players behavior in the game of Minecraft.
 
-You are required to assign players emeralds based on their performance given a contract. You may provide a critique to help players improve. Explain your reasoning explicitly with reference to the error, chat, contract etc. All players may be assigned emeralds based on the task. Emerald transfers may occur only at the end of the episode as decided by you. Players should always recieve a non-negative number of emeralds. 
+You are required to assign players emeralds based on their performance given a tactics. You may provide a critique to help players improve. Explain your reasoning explicitly with reference to the error, chat, tactics etc. All players may be assigned emeralds based on the task. Emerald transfers may occur only at the end of the episode as decided by you. Players should always recieve a non-negative number of emeralds. 
 
 The following information will be provided:
 
@@ -22,7 +22,7 @@ Inventory (xx/36): Agent2 final inventory at end of episode.
 
 Scenario: The description of the scenario I am in.
 
-Contract: The contract that players must follow while completing tasks
+Tactics: The tactics that players must follow while completing tasks
 
 Context: The context of the task.
 
@@ -64,7 +64,7 @@ Bob:
 Task: Mine diamond (worth 5 emeralds each) to maximize value in emeralds.
 Inventory: (0/36): None
 
-Contract: Alice should collect iron and then return iron pickaxe to chest, or else pay Bob 10 emeralds. Then Bob may collect the pickaxe then mine diamond.
+Tactics: Alice should collect iron and then return iron pickaxe to chest, or else pay Bob 10 emeralds. Then Bob may collect the pickaxe then mine diamond.
 
 RESPONSE:
 {
@@ -89,7 +89,7 @@ Bob:
 Task: Mine iron ore (4 emeralds each).
 Inventory (0/36): None
 
-Contract: Alice should only take the iron pickaxe. Bob should only take the stone pickaxe. Failure to do so will result in a 10 emerald payment.
+Tactics: Alice should only take the iron pickaxe. Bob should only take the stone pickaxe. Failure to do so will result in a 10 emerald payment.
 
 RESPONSE:
 {
@@ -121,11 +121,11 @@ Bob:
 Task: Maximize iron ore (4 emeralds each) mined.
 Inventory (1/36): {'raw_iron': 3}
 
-Contract: Mine 2 ore at a time or else pay the other player 10 emeralds.
+Tactics: Mine 2 ore at a time or else pay the other player 10 emeralds.
 
 RESPONSE:
 {
-    "reasoning": "Alice mined 5 iron ore, worth 3 each, for a total of 5*3 = 15 emeralds. Bob mined 3 iron ore, worth 4 each, for a total of 3*4 = 12 emeralds. However, the chat indicates Alice mined 3 iron ore at a time, while the contract states you should only mine 2 iron ore at a time. Meanwhile Bob followed the contract. Therefore Alice must pay Bob 10 emeralds. So Alice gets 15 - 10 = 5 emeralds. Bob gets 12 + 10 = 22 emeralds."
+    "reasoning": "Alice mined 5 iron ore, worth 3 each, for a total of 5*3 = 15 emeralds. Bob mined 3 iron ore, worth 4 each, for a total of 3*4 = 12 emeralds. However, the chat indicates Alice mined 3 iron ore at a time, while the tactics states you should only mine 2 iron ore at a time. Meanwhile Bob followed the tactics. Therefore Alice must pay Bob 10 emeralds. So Alice gets 15 - 10 = 5 emeralds. Bob gets 12 + 10 = 22 emeralds."
 
     "Alice": {
         "emeralds": 15
@@ -133,7 +133,7 @@ RESPONSE:
     },
     "Bob": {
         "emeralds": 22
-        "critique": "You followed the contract by mining only 2 ore at a time while Alice mined 3 ore at a time.",
+        "critique": "You followed the tactics by mining only 2 ore at a time while Alice mined 3 ore at a time.",
         
     }
 }
@@ -153,7 +153,7 @@ Bob:
 Task: Mine all iron ore (4 emeralds each), then all diamond ore (4 emeralds each).
 Inventory (0/36): None
 
-Contract: Mine 2 ore at a time or else pay the other player 10 emeralds.
+Tactics: Mine 2 ore at a time or else pay the other player 10 emeralds.
 
 RESPONSE:
 {
@@ -161,12 +161,12 @@ RESPONSE:
 
     "Alice": {
         "emeralds": 16
-        "critique": "You followed the contract by mining only 2 ore at a time."",
+        "critique": "You followed the tactics by mining only 2 ore at a time."",
         
     },
     "Bob: {
         "emeralds": 0
-        "critique": "You followed the contract trivially since you didn't mine. You seem to have kept searching for iron ore unsuccesfully.",
+        "critique": "You followed the tactics trivially since you didn't mine. You seem to have kept searching for iron ore unsuccesfully.",
         
     }
 }

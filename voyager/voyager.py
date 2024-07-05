@@ -186,6 +186,8 @@ class Voyager:
         self.messages = None
         self.conversations = []
         self.last_events = None
+        self.reward_item_names = []
+        self.team = None
 
     def setup_custom_logger(self, use_logging=True, save_dir="logs"):
         """
@@ -207,10 +209,10 @@ class Voyager:
 
         return print
 
-    def reset(self, task, contract="", scenario="", context="", reset_env=True):
+    def reset(self, task, tactics="", scenario="", context="", reset_env=True):
         self.action_agent_rollout_num_iter = 0
         self.task = task
-        self.contract = contract
+        self.tactics = tactics
         self.scenario = scenario
         self.context = context
         if reset_env:
@@ -235,7 +237,7 @@ class Voyager:
         )
         system_message = self.action_agent.render_system_message(skills=skills)
         human_message = self.action_agent.render_human_message(
-            events=events, code="", task=self.task, contract=self.contract, scenario=self.scenario, context=context, critique=""
+            events=events, code="", task=self.task, tactics=self.tactics, scenario=self.scenario, context=context, critique=""
         )
         self.messages = [system_message, human_message]
         self.logger(
@@ -271,7 +273,7 @@ class Voyager:
             self.action_agent.update_chest_memory(events[-1][1]["nearbyChests"])
             success, critique = self.critic_agent.check_task_success(
                 events=events,
-                task=self.task, # could add in contract here so that critic checks contract following
+                task=self.task, # could add in tactics here so that critic checks tactics following
                 context=self.context,
                 chest_observation=self.action_agent.render_chest_observation(),
                 max_retries=5,
@@ -303,7 +305,7 @@ class Voyager:
                 events=events,
                 code=parsed_result["program_code"],
                 task=self.task,
-                contract=self.contract,
+                tactics=self.tactics,
                 context=self.context,
                 critique=critique,
             )
@@ -336,15 +338,15 @@ class Voyager:
             )
         return self.messages, 0, done, info
 
-    def rollout(self, *, task, contract, context, reset_env=True):
-        self.reset(task=task, contract=contract, context=context, reset_env=reset_env)
+    def rollout(self, *, task, tactics, context, reset_env=True):
+        self.reset(task=task, tactics=tactics, context=context, reset_env=reset_env)
         while True:
             messages, reward, done, info = self.step()
             if done:
                 break
         return messages, reward, done, info
 
-    def learn(self, contract="", reset_env=True):
+    def learn(self, tactics="", reset_env=True):
         if self.resume:
             # keep the inventory
             self.env.reset(
@@ -380,7 +382,7 @@ class Voyager:
             try:
                 messages, reward, done, info = self.rollout(
                     task=task,
-                    contract=contract,
+                    tactics=tactics,
                     context=context,
                     reset_env=reset_env,
                 )
@@ -421,7 +423,7 @@ class Voyager:
             "skills": self.skill_manager.skills,
         }
 
-    def decompose_task(self, task, contract):
+    def decompose_task(self, task, tactics):
         if not self.last_events:
             self.last_events = self.env.reset(
                 options={
@@ -429,15 +431,15 @@ class Voyager:
                     "wait_ticks": self.env_wait_ticks,
                 }
             )
-        return self.curriculum_agent.decompose_task(task, self.last_events, contract)
+        return self.curriculum_agent.decompose_task(task, self.last_events, tactics)
 
-    def inference(self, task=None, contract=None, sub_goals=[], reset_mode="hard", reset_env=True):
+    def inference(self, task=None, tactics=None, sub_goals=[], reset_mode="hard", reset_env=True):
         if not task and not sub_goals:
             raise ValueError("Either task or sub_goals must be provided")
         if not sub_goals:
-            sub_goals = self.decompose_task(task, contract)
-        if not contract:
-            raise ValueError("Contract must be provided")
+            sub_goals = self.decompose_task(task, tactics)
+        if not tactics:
+            raise ValueError("Tactics must be provided")
         self.env.reset(
             options={
                 "mode": reset_mode,
@@ -455,7 +457,7 @@ class Voyager:
             )
             messages, reward, done, info = self.rollout(
                 task=next_task,
-                contract=contract,
+                tactics=tactics,
                 context=context,
                 reset_env=reset_env,
             )

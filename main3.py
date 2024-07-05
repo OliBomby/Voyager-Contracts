@@ -49,8 +49,8 @@ for game in range(5, 20):
 
     multi_agent = MultiAgentVoyager(
         **multi_options,
-        contract_mode = "manual",
-        contract=contract,
+        tactics_mode="manual",
+        team_tactics=contract,
         save_dir=f"{save_dir}/game{game}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
     )
     multi_agent.run()

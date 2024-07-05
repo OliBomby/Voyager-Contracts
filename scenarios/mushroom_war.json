@@ -1,11 +1,11 @@
 {
-    "description": "There is a river that has been polluted with slime blocks. Nearby there are three giant mushrooms each containing 9 red mushroom blocks. Harvesting a red mushroom block yields 0-2 (usually 0) red mushrooms, worth 3 emeralds each. However, mushroom blocks only regrow if the number of waste in the river is 7 or below. The river will be quickly repolluted after slime is removed. The scenario ends after an unknown amount of time. There are no chests.",
+    "description": "There is a red team and a blue team. In the red team are Ryn and Raze. In the blue team are Byte and Blink. The red team is located at -9 -60 -10. The blue team is located at -9 -60 6. Both teams have a designated area which is a sphere with a 7 block radius from the center. Both team areas have been polluted with slime blocks. In the red team area there are three giant mushrooms each containing 5 red mushroom blocks. In the blue team area there are three giant mushrooms each containing 5 brown mushroom blocks. Harvesting a mushroom block yields 0-2 (usually 0) mushrooms. However, mushroom blocks only regrow if the number of slime blocks in the team area is 7 or below. The slime blocks will be quickly repolluted after slime is removed. The scenario ends after an unknown amount of time. The red team gets rewarded 3 emeralds for each red mushroom they collect. The blue team gets rewarded 3 emeralds for each brown mushroom they collect. The team with the most emeralds at the end wins the game. There are no chests.",
     "secret_description": "Agents do not see this description, just for information",
     "tasks": {
-        "Ryn": "Each red mushroom in your inventory at the end of the scenario is worth 3 emeralds. Maximize value in emeralds.",
-        "Raze": "Each red mushroom in your inventory at the end of the scenario is worth 3 emeralds. Maximize value in emeralds.",
-        "Byte": "Each brown mushroom in your inventory at the end of the scenario is worth 3 emeralds. Maximize value in emeralds.",
-        "Blink": "Each brown mushroom in your inventory at the end of the scenario is worth 3 emeralds. Maximize value in emeralds."
+        "Ryn": "You are in the red team. Each red mushroom in your inventory at the end of the scenario is worth 3 emeralds. Win the game.",
+        "Raze": "You are in the red team. Each red mushroom in your inventory at the end of the scenario is worth 3 emeralds. Win the game.",
+        "Byte": "You are in the blue team. Each brown mushroom in your inventory at the end of the scenario is worth 3 emeralds. Win the game.",
+        "Blink": "You are in the blue team. Each brown mushroom in your inventory at the end of the scenario is worth 3 emeralds. Win the game."
     },
     "center_position": {"x": -9, "y": -60, "z": -2},
     "block_positions": {
@@ -21,7 +21,12 @@
         "Byte": {"x": -11, "y": -60, "z": 6},
         "Blink": {"x": -7, "y": -60, "z": 6}
     },
-    "reward_item_names": ["red_mushroom", "brown_mushroom"],
+    "team_members": {
+        "Ryn": "red",
+        "Raze": "red",
+        "Byte": "blue",
+        "Blink": "blue"
+    },
     "chest_contents": {},
     "teams": {
         "red": {
@@ -30,7 +35,7 @@
                 "y": -60,
                 "z": -10
             },
-            "reward_item_name": "red_mushroom",
+            "reward_item_names": ["red_mushroom"],
             "members": ["Ryn", "Raze"]
         },
         "blue": {
@@ -39,7 +44,7 @@
                 "y": -60,
                 "z": 6
             },
-            "reward_item_name": "brown_mushroom",
+            "reward_item_names": ["brown_mushroom"],
             "members": ["Byte", "Blink"]
         }
     }

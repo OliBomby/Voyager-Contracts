@@ -47,28 +47,28 @@ for contract_i in range(4, 10):
 
     contract_env = MultiAgentVoyager(
         **multi_options,
-        contract_mode = "auto",
+        tactics_mode="auto",
         save_dir=f"{save_dir}/contract_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
     )
     contract_env.load_scenario(reset='hard')
     for i in range(3):
         try:
-            contract_env.negotiate_contract()
+            contract_env.negotiate_tactics()
             break
         except:
             print('negotiation failed')
             continue
-    if contract_env.contract is None:
+    if contract_env.team_tactics is None:
         raise Exception('Contract negotiation failed after 3 tries')
-    contract = contract_env.contract
+    contract = contract_env.team_tactics
     contract_env.close()
 
     for game in range(5):
 
         multi_agent = MultiAgentVoyager(
             **multi_options,
-            contract_mode = "manual",
-            contract=contract,
+            tactics_mode="manual",
+            team_tactics=contract,
             save_dir=f"{save_dir}/game{game}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
         )
         multi_agent.run()
