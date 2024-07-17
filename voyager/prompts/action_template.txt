@@ -30,7 +30,7 @@ Plan: How to complete the Task step by step using the feedback from Critique whi
 Code:
     1) Write an async function taking the bot as the only argument.
     2) Reuse the above useful programs as much as possible.
-        - Use `mineBlock(bot, name, count)` to collect blocks. Do not use `bot.dig` directly.
+        - Use `mineBlock(bot, name, count, point)` to collect blocks. Do not use `bot.dig` directly.
         - Use `craftItem(bot, name, count)` to craft items. Do not use `bot.craft` or `bot.recipesFor` directly.
         - Use `smeltItem(bot, name count)` to smelt items. Do not use `bot.openFurnace` directly.
         - Use `placeItem(bot, name, position)` to place blocks. Do not use `bot.placeBlock` directly.
@@ -41,19 +41,20 @@ Code:
     6) Call `bot.chat` to show the intermediate progress. Accounce all actions that are useful for other players to know about with bot.chat (e.g. "Mining iron ore", "Retrieving pickaxe form chest", "Returning item to chest").
     7) Use `exploreUntil(bot, direction, maxDistance, callback)` when you cannot find something. You should frequently call this before mining blocks or killing mobs. You should select a direction at random every time instead of constantly using (1, 0, 1).
     8) `maxDistance` should always be 32 for `bot.findBlocks` and `bot.findBlock`. Do not cheat. Remember bot.findBlock doesn't return a position, you must use ".position" after to get the position.
-    9) Do not write infinite loops (that rely on breaks to exit) or recursive functions.
+    9) Use an infinite loop to make sure your function keeps executing the tactics forever.
     10) Do not use `bot.on` or `bot.once` to register event listeners. You definitely do not need them.
     11) Name your function in a meaningful way (can infer the task from the name).
-    12) Always use `mineBlock(bot, name, count)` with count > 1 when possible. `mineBlock(bot, name)` will only find and mine one (1) block with the given name. It can be useful to check if a block exists first with `bot.findBlock` before mining it. Mining multiple blocks (i.e. calling mineBlock(bot, 'iron', 10) at a time is usually faster than mining one multiple times (i.e. calling mineBlock(bot, 'iron', 1) 10 times)).
+    12) Always use `mineBlock(bot, name, count, point)` with count > 1 when possible. `mineBlock(bot, name)` will only find and mine one (1) block with the given name. It can be useful to check if a block exists first with `bot.findBlock` before mining it. Mining multiple blocks (i.e. calling mineBlock(bot, 'iron', 10) at a time is usually faster than mining one multiple times (i.e. calling mineBlock(bot, 'iron', 1) 10 times)).
     13) bot.findBlocks will only find (1) block. To find multiple blocks, set count greater than 1. For the 'matching' parameter, be sure to use .id not the name of the block (e.g. matching: mcData.blocksByName.chest.id)
     14) Use given functions to coordinate timing and turns with other players
-        - Use `sendSignal(bot)` to signal [player signal] to another player
-        - Use `waitSignal(bot, task)` to wait for a [player signal] while executing task. This is useful if you want to listen while doing something else. Use this when you don't want to sleep while waiting for a signal. 
+        - Use `sendSignal(bot, username)` to signal [username signal] to another player with the specified username.
+        - Use `waitSignal(bot, task)` to wait for a [{username} signal] while executing task. This is useful if you want to listen while doing something else. Use this when you don't want to sleep while waiting for a signal.
         - To switch roles with another player efficiently, use waitSignalTask(bot, task) so that you can do something else while waiting for the signal.
-    15) Always respond with code even if last round was successful.\
-    16) Never try to transfer emeralds--the judge will take care of that.
+    15) Always respond with code even if last round was successful.
+    16) bot.findBlocks and bot.mineBlock will search for blocks in a sphere centered on the bot. To find blocks around a specific location, set the 'point' parameter to the center position of the location you want to search around.
 
-Iron ore in the world is called "iron_ore", and when mined its called "raw_iron". Diamond ore is called "diamond_ore" and when mined is called "diamond". An iron pickaxe can mine iron ore and diamond. A stone pickaxe can only mine iron ore.
+Do not use any waits or sleeps. You should always be doing something. If you need to wait for something, you should be doing something else while waiting.
+Be diligent in providing locations to avoid unintentionally helping the enemy team.
 
 You should only respond in the format as described below:
 RESPONSE FORMAT:

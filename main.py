@@ -35,16 +35,16 @@ options = {
 }
 
 tactics = {"red": """"
-1. Gizmo will focus on harvesting red mushroom blocks from the giant mushrooms.
-2. Glitch will focus on managing the waste in the river, ensuring the waste level is 7 or below to allow mushroom blocks to regrow.
-3. At the end of the scenario, Gizmo will transfer 50% of the emerald value of the red mushrooms he collected to Glitch.
-4. No additional emerald transfers will occur between Gizmo and Glitch.
+1. Ryn will focus on removing slime blocks in the red team area to ensure mushroom regrowth.
+2. Raze will harvest red mushroom blocks in the red team area.
+3. Once Ryn ensures the slime blocks are below 7, Ryn will harvest red mushroom blocks.
+4. Raze will signal Ryn if more slime removal is needed in the red team area.
+5. After each of us harvests mushrooms, we will alternate turns sabotaging the blue team by placing additional slime blocks in their area.
 """.strip(),
            "blue": """"
-1. Gizmo will focus on harvesting red mushroom blocks from the giant mushrooms.
-2. Glitch will focus on managing the waste in the river, ensuring the waste level is 7 or below to allow mushroom blocks to regrow.
-3. At the end of the scenario, Gizmo will transfer 50% of the emerald value of the red mushrooms he collected to Glitch.
-4. No additional emerald transfers will occur between Gizmo and Glitch.
+1. Byte will focus on harvesting brown mushroom blocks in the blue team area.
+2. Blink will go to the red team area to sabotage their mushroom blocks and add slime blocks to their area.
+3. Byte will remove slime blocks in the blue team area periodically to ensure mushroom regrowth, then signal Blink when it's safe to harvest.
 """.strip()
            }
 
@@ -66,11 +66,12 @@ multi_agent = MultiAgentVoyager(
     num_agents=4,
     scenario_file="mushroom_war.json",
     usernames=usernames,
-    critic_mode="auto",
+    critic_mode="manual",
     tactics_mode="auto",
-    team_tactics=None,
-    # save_dir="saves/cleanup_swap_transfer",
-    continuous=True,
+    team_tactics=tactics,
+    # save_dir="saves/game_save_20240717_180303",
+    # replay=True,
+    continuous=False,
     episode_timeout=120,  #120,
     num_episodes=1,
     negotiator_model_name="gpt-4o",

@@ -49,11 +49,12 @@ class Negotiator:
         return inner_thought, message
 
 class Negotiation:
-    def __init__(self, agent1, agent2, max_turns=6, save_dir='logs'):
+    def __init__(self, agent1, agent2, max_turns=6, save_dir='logs', team_name=None):
         self.agent1 = agent1
         self.agent2 = agent2
         self.max_turns = max_turns
         self.save_dir = save_dir
+        self.team_name = team_name
         self.reset()
         self.logger = self.setup_custom_logger()
 
@@ -71,7 +72,8 @@ class Negotiation:
         """
         Set up a custom logger with the given name and log file.
         """
-        log_file = f'{self.save_dir}/negotiation.ansi'
+        filename = 'negotiation' if self.team_name is None else f'negotiation_{self.team_name}'
+        log_file = f'{self.save_dir}/{filename}.ansi'
 
         formatter = logging.Formatter(fmt='%(message)s')
         handler = logging.FileHandler(log_file, mode='w')  # Change to 'a' if you want to append

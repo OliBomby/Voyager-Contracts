@@ -5,8 +5,8 @@ async function runCleanupScenario(bot) {
     bot.chat("starting cleanup scenario...");
 
     const waste_cutoff = 7;
-    const reward_respawn_rate = 0.05;
-    const waste_respawn_rate = 0.05;
+    const reward_respawn_rate = 0.1;
+    const waste_respawn_rate = 0.02;
     const dirty_tick_speed = 0;
     const clean_tick_speed = 100;
 

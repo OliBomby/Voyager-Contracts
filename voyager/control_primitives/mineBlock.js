@@ -1,4 +1,4 @@
-async function mineBlock(bot, name, count = 1) {
+async function mineBlock(bot, name, count = 1, point = null) {
     // return if name is not string
     if (typeof name !== "string") {
         throw new Error(`name for mineBlock must be a string`);
@@ -11,6 +11,7 @@ async function mineBlock(bot, name, count = 1) {
         throw new Error(`No block named ${name}`);
     }
     const blocks = bot.findBlocks({
+        point: point,
         matching: [blockByName.id],
         maxDistance: 32,
         count: count,

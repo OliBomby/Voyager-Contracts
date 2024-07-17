@@ -1,6 +1,6 @@
 // send a message to another player indicating that the bot has finished its turn
-async function sendSignal(bot) {
-  bot.chat("[player signal]")
+async function sendSignal(bot, username) {
+  bot.chat(`[${username} signal]`)
 }
 
 // Example usage:
@@ -8,17 +8,18 @@ async function sendSignal(bot) {
 async function task1() {
   console.log("Starting task1...");
   await new Promise(r => setTimeout(r, 5000)); // Simulate a 5 second task
-  sendSignal(bot);
+  sendSignal(bot, "player2");
 }
 async function task2() {
   console.log("Starting task2...");
   await new Promise(r => setTimeout(r, 5000)); // Simulate a 5 second task
-  sendSignal(bot);
+  sendSignal(bot, "player1");
 }
 // Player 1 code
 async function player1() {
   await waitSignal(bot, task1);
   await waitSignal(bot, task2);
+}
 // Player 2 code
 async function player2() {
   await waitSignal(bot, task2);

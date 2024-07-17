@@ -1,6 +1,6 @@
 // send a message to another player indicating that the bot has finished its turn
-async function sendSignal(bot) {
-  bot.chat("[player signal]")
+async function sendSignal(bot, username) {
+  bot.chat(`[${username} signal]`)
 }
 
 // // sleeps until another player executes sendSignal
@@ -36,7 +36,7 @@ async function waitSignal(bot, task=null, timeoutDuration = 30000) {
   // This is the logic for the chat listener, the same as before
   const chatListening = new Promise((resolve, reject) => {
     function chatHandler(username, message) {
-      if (username !== bot.username && message === '[player signal]') {
+      if (username !== bot.username && message === `[${bot.username} signal]`) {
         bot.chat('[signal recieved]')
         clearTimeout(timeout);
         resolve();

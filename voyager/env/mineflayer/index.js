@@ -139,6 +139,7 @@ app.post("/start", (req, res) => {
         initCounter(bot);
         bot.chat("/gamerule keepInventory true");
         bot.chat("/gamerule doDaylightCycle false");
+        bot.chat("/gamemode survival");
     });
 
     function onConnectionFailed(e) {

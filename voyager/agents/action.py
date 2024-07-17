@@ -108,7 +108,7 @@ class ActionAgent:
         return system_message
 
     def render_human_message(
-        self, *, events, code="", task="", tactics="", scenario="", context="", critique="", tactics_critique=""
+        self, *, events, code="", task="", tactics="", scenario="", context="", critique=""
     ):
         chat_messages = []
         error_messages = []
@@ -210,11 +210,6 @@ class ActionAgent:
             observation += f"Task Critique: {critique}\n\n"
         else:
             observation += f"Task Critique: None\n\n"
-
-        if tactics_critique:
-            observation += f"Tactics Critique: {tactics_critique}\n\n"
-        else:
-            observation += f"Tactics Critique: None\n\n"
 
         return HumanMessage(content=observation)
 

@@ -1,5 +1,6 @@
 import json
 import threading
+
 from voyager import Voyager
 from voyager.negotiation import Negotiation, Negotiator
 import time
@@ -17,6 +18,7 @@ class MultiAgentVoyager:
                  judge_username="Judy",
                  scenario_file=None,
                  save_dir=None,
+                 replay=False,
                  critic_mode="auto",
                  tactics_mode="auto",
                  team_tactics=None,
@@ -38,7 +40,7 @@ class MultiAgentVoyager:
         self.critic_mode = critic_mode
         self.continuous = continuous
         self.tactics_mode = tactics_mode
-        self.team_tactics = team_tactics if team_tactics is not None else {}
+        self.team_tactics = team_tactics
         self.agents = []
         self.judge = None
         self.usernames = usernames
@@ -52,6 +54,7 @@ class MultiAgentVoyager:
         self.load_from_save = False
         self.teams = None
         self.team_members = None
+        self.replay = replay
 
         assert critic_mode in ["auto", "manual"]
         assert tactics_mode in ["auto", "manual"]
@@ -356,9 +359,8 @@ class MultiAgentVoyager:
                 success, critique = critic_response
                 emeralds = None
 
-            result.update({'success': success, 'critique': critique, 'emeralds': emeralds})
-        
-        # TODO: include judge human feedback
+            result.update({'success': success, 'critique': critique})
+
         def human_check_task_success():
             results = {agent.username: {} for agent in self.agents}
             # log critic human critic messages
@@ -388,7 +390,7 @@ class MultiAgentVoyager:
         if self.critic_mode == "manual":
             return human_check_task_success()
         
-        return self.run_threads(ai_check_task_success, events, include_judge=True)
+        return self.run_threads(ai_check_task_success, events, include_judge=False)
         
     def save_episode(self, results):
         U.dump_json(results, f"{self.save_dir}/episodes/episode{self.episode}/code.json")
@@ -440,7 +442,7 @@ class MultiAgentVoyager:
             result.update({'events': events})
 
         # update messages for next round
-        def update_agent(agent, result, parsed_result, events, success, critique, tactics_critique, emeralds):
+        def update_agent(agent, result, parsed_result, events, success, critique):
             new_skills = agent.skill_manager.retrieve_skills(
                 query=agent.context
                 + "\n\n"
@@ -451,11 +453,10 @@ class MultiAgentVoyager:
                 events=events,
                 code=parsed_result["program_code"],
                 task=agent.task,
-                tactics=agent.team_tactics[agent.team],
+                tactics=self.team_tactics[agent.team],
                 scenario=agent.scenario,
                 context=agent.context,
                 critique=critique,
-                tactics_critique=tactics_critique,
             )
             agent.last_events = copy.deepcopy(events)
             agent.messages = [system_message, human_message]
@@ -470,7 +471,6 @@ class MultiAgentVoyager:
                 "task": agent.task,
                 "success": success,
                 "conversations": agent.conversations,
-                "emeralds": emeralds
             }
             if success:
                 assert (
@@ -492,6 +492,8 @@ class MultiAgentVoyager:
             other_events = {agent.username: [] for agent in self.agents}
             for agent in self.agents:
                 other_agents = [a for a in self.agents if a != agent]
+                if 'events' not in events[agent.username]:
+                    continue
                 for (event_type, event) in events[agent.username]['events']:
                     if event_type == 'onChat':
                         chat_events[agent.username].append((event_type, event))
@@ -552,8 +554,8 @@ class MultiAgentVoyager:
                 **parsed_results[agent.username],
                 **events[agent.username], 
                 **critic_response[agent.username],
-                'tactics_critique': critic_response[self.judge.username]['critique'][agent.username],
-                'emeralds': critic_response[self.judge.username]['emeralds'][agent.username],
+                # 'tactics_critique': critic_response[self.judge.username]['critique'][agent.username],
+                # 'emeralds': critic_response[self.judge.username]['emeralds'][agent.username],
 
             } for agent in self.agents}
         )
@@ -593,7 +595,7 @@ class MultiAgentVoyager:
         )
 
         # hold a negotiation between players, where negotiator1 starts first
-        negotiation = Negotiation(negotiator1, negotiator2, max_turns=max_turns, save_dir=self.save_dir)
+        negotiation = Negotiation(negotiator1, negotiator2, max_turns=max_turns, save_dir=self.save_dir, team_name=team)
         negotiation.simulate()
         self.team_tactics[team] = negotiation.get_tactics()
 
@@ -607,10 +609,12 @@ class MultiAgentVoyager:
         # load the tactics
         if self.tactics_mode == "auto":
             if self.team_tactics is not None:
-                print("Warning: tactics provided but tactics_mode is 'auto'. tactics will be ignored.")
-            print('Negotiating tactics...')
-            for team in self.teams.keys():
-                self.negotiate_tactics(team)
+                print("Warning: tactics_mode is 'auto' but tactics are provided. skipping tactics generation.")
+            else:
+                print('Negotiating tactics...')
+                self.team_tactics = {}
+                for team in self.teams.keys():
+                    self.negotiate_tactics(team)
 
         # save tactics to file
         with open(f"{self.save_dir}/tactics.json", 'w') as tactics_file:
@@ -623,7 +627,7 @@ class MultiAgentVoyager:
             'context': "",
             'reset_env': False,}}, shared_args=True)
 
-        replay = False
+        replay = self.replay
         done = False
         while not done or replay:
             if replay:
@@ -644,11 +648,11 @@ class MultiAgentVoyager:
                 # success = False
                 
                 # Print successes
-                for agent in self.agents:
-                    print(f"{agent.username} {{emeralds: {results[agent.username]['info']['emeralds']}}}")
+                # for agent in self.agents:
+                #     print(f"{agent.username} {{emeralds: {results[agent.username]['info']['emeralds']}}}")
 
                 # save emerald values
-                U.json_dump({agent.username: results[agent.username]['info']['emeralds'] for agent in self.agents}, f"{self.save_dir}/episodes/episode{self.episode}/emeralds.json")
+                # U.json_dump({agent.username: results[agent.username]['info']['emeralds'] for agent in self.agents}, f"{self.save_dir}/episodes/episode{self.episode}/emeralds.json")
 
                 # if success:
                 #     user_response = input("Episode success. Press enter to close or 'r' to repeat...")
